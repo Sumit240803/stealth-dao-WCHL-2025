@@ -1,0 +1,38 @@
+{
+  "canisters": {
+    "internet_identity": {
+      "candid": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity.did",
+      "frontend": {},
+      "remote": {
+        "id": {
+          "ic": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+        }
+      },
+      "type": "custom",
+      "wasm": "https://github.com/dfinity/internet-identity/releases/latest/download/internet_identity_dev.wasm.gz"
+    },
+    "stealth-dao-backend": {
+      "candid": "src/stealth-dao-backend/stealth-dao-backend.did",
+      "package": "stealth-dao-backend",
+      "type": "rust"
+    },
+    "stealth-dao-frontend": {
+      "dependencies": [
+        "stealth-dao-backend"
+      ],
+      "source": [
+        "src/stealth-dao-frontend/dist"
+      ],
+      "type": "assets",
+      "workspace": "stealth-dao-frontend"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  },
+  "output_env_file": ".env",
+  "version": 1
+}

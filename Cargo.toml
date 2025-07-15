@@ -1,0 +1,5 @@
+[workspace]
+members = [
+    "src/stealth-dao-backend"
+]
+resolver = "2"
