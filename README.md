@@ -1,61 +1,156 @@
-# `stealth-dao`
 
-Welcome to your new `stealth-dao` project and to the Internet Computer development community. By default, creating a new project adds this README and some template files to your project directory. You can edit these template files to customize your project and to include your own code to speed up the development cycle.
+---
 
-To get started, you might want to explore the project directory structure and the default configuration file. Working with this project in your development environment will not affect any production deployment or identity tokens.
+## 🏗️ **StealthDAO Architecture – Canister-Wise Breakdown**
 
-To learn more before you start working with `stealth-dao`, see the following documentation available online:
+This architecture is built on the **Internet Computer (ICP)** and designed for **anonymous, democratic governance** using **zero-knowledge proofs** and **modular smart canisters**.
 
-- [Quick Start](https://internetcomputer.org/docs/current/developer-docs/setup/deploy-locally)
-- [SDK Developer Tools](https://internetcomputer.org/docs/current/developer-docs/setup/install)
-- [Rust Canister Development Guide](https://internetcomputer.org/docs/current/developer-docs/backend/rust/)
-- [ic-cdk](https://docs.rs/ic-cdk)
-- [ic-cdk-macros](https://docs.rs/ic-cdk-macros)
-- [Candid Introduction](https://internetcomputer.org/docs/current/developer-docs/backend/candid/)
+---
 
-If you want to start working on your project right away, you might want to try the following commands:
+### 1. 🔐 **ShadowID Canister**
 
-```bash
-cd stealth-dao/
-dfx help
-dfx canister --help
+**Purpose**: Manages anonymous identity registration and enforces uniqueness via nullifiers.
+
+**Responsibilities**:
+
+* Register zk-based identity commitments (e.g., Semaphore, zkLogin)
+* Store nullifiers to enforce one-action-per-user rules
+* Allow ZK verification for identity group membership
+
+**Why It Matters**:
+Enables users to interact **anonymously but uniquely**, forming the privacy backbone of StealthDAO.
+
+---
+
+### 2. 📜 **ProposalHub Canister**
+
+**Purpose**: Handles the lifecycle of governance proposals.
+
+**Responsibilities**:
+
+* Accepts proposal submissions (only from eligible, zk-verified users)
+* Stores proposal metadata: title, description, status, creator hash
+* Manages state transitions: Draft → Discussion → Voting → Closed
+* Stores voting options and results
+
+**Why It Matters**:
+It ensures proposals are **valid, spam-free**, and trackable throughout the governance process — without exposing proposers’ identities.
+
+---
+
+### 3. 💬 **DiscussionBoard Canister**
+
+**Purpose**: Enables **anonymous, open discussions** on each proposal.
+
+**Responsibilities**:
+
+* Stores comments linked to proposals
+* Accepts comments only from registered ShadowIDs
+* Optionally limits one-comment-per-user to prevent spam
+* Allows voting or reaction tagging on comments (ZK optional)
+
+**Why It Matters**:
+Supports **transparent deliberation and feedback** on ideas, without linking any comment to a real-world identity.
+
+---
+
+### 4. 🗳 **ZKVote Canister**
+
+**Purpose**: Handles **anonymous, one-person-one-vote** voting.
+
+**Responsibilities**:
+
+* Accepts zk-proofs that validate voter eligibility
+* Prevents double-voting using nullifiers
+* Stores encrypted vote choices
+* Tallies final results and optionally proves correctness (ZK/homomorphic)
+
+**Why It Matters**:
+Delivers **fair, private, verifiable voting** — the core of any democratic system — while preserving voter anonymity.
+
+---
+
+### 5. 📈 **ReputationVault Canister** *(Optional but Recommended)*
+
+**Purpose**: Tracks **anonymous reputation** per ShadowID to incentivize positive participation.
+
+**Responsibilities**:
+
+* Updates reputation scores after actions like voting, commenting, or proposing
+* Stores and verifies reputation scores as zk-commitments
+* Supports gating proposal rights based on minimum reputation
+
+**Why It Matters**:
+Creates a **merit-based governance layer** without revealing user identity, enhancing accountability while preserving privacy.
+
+---
+
+### 6. 🧠 **EchoAIProxy Canister** *(Optional but Powerful)*
+
+**Purpose**: Integrates with external AI services to assist governance with insights and automation.
+
+**Responsibilities**:
+
+* Summarizes proposals automatically
+* Generates AI rebuttals or discussion starters
+* Tags proposals with relevant categories (e.g., "funding", "policy")
+
+**Why It Matters**:
+Improves governance quality by supporting **AI-augmented deliberation**, especially useful in high-volume or complex DAOs.
+
+---
+
+### 7. ⚙️ **DAOSettings Canister**
+
+**Purpose**: Stores all **governance and system configuration settings**.
+
+**Responsibilities**:
+
+* Maintains parameters like:
+
+  * Voting duration
+  * Quorum percentage
+  * Proposal eligibility rules (e.g., min reputation)
+  * Use of AI assistant
+* Allows upgrade and tuning via proposals
+
+**Why It Matters**:
+Enables DAO members to **govern the governance process itself**, supporting **on-chain configurability and evolution**.
+
+---
+
+## 🔄 **How It All Connects (Flow Summary)**
+
+```text
+User joins → ShadowID registered → Views or proposes → Discusses → Votes → Result tallied → Rep updated
 ```
 
-## Running the project locally
+Each action is routed through the relevant canister:
 
-If you want to test your project locally, you can use the following commands:
+| Action                     | Handled By                           |
+| -------------------------- | ------------------------------------ |
+| Identity Registration      | ShadowID                             |
+| Proposal Creation          | ProposalHub + ShadowID (ZK verified) |
+| Proposal Discussion        | DiscussionBoard                      |
+| Voting                     | ZKVote + ShadowID                    |
+| Tally & Result Publication | ZKVote                               |
+| Reputation Update          | ReputationVault                      |
+| AI Assistance              | EchoAIProxy                          |
+| Governance Settings        | DAOSettings                          |
 
-```bash
-# Starts the replica, running in the background
-dfx start --background
+---
 
-# Deploys your canisters to the replica and generates your candid interface
-dfx deploy
-```
+## ✅ Key Benefits of This Architecture
 
-Once the job completes, your application will be available at `http://localhost:4943?canisterId={asset_canister_id}`.
+| Benefit            | How It's Achieved                                |
+| ------------------ | ------------------------------------------------ |
+| 🛡 Anonymity       | ShadowID + zk proofs                             |
+| 🗳 Democracy       | One-person-one-vote via nullifiers               |
+| 🔍 Transparency    | Verifiable results, public data (not identities) |
+| 🚫 Spam Resistance | Proposal gating via rep/invite/zkSBT             |
+| 📊 Meritocracy     | Optional zk-based reputation                     |
+| 🔁 Modularity      | Independent upgradable canisters per function    |
+| 🤖 Intelligence    | AI-enhanced proposals (via EchoAI)               |
 
-If you have made changes to your backend canister, you can generate a new candid interface with
+---
 
-```bash
-npm run generate
-```
-
-at any time. This is recommended before starting the frontend development server, and will be run automatically any time you run `dfx deploy`.
-
-If you are making frontend changes, you can start a development server with
-
-```bash
-npm start
-```
-
-Which will start a server at `http://localhost:8080`, proxying API requests to the replica at port 4943.
-
-### Note on frontend environment variables
-
-If you are hosting frontend code somewhere without using DFX, you may need to make one of the following adjustments to ensure your project does not fetch the root key in production:
-
-- set`DFX_NETWORK` to `ic` if you are using Webpack
-- use your own preferred method to replace `process.env.DFX_NETWORK` in the autogenerated declarations
-  - Setting `canisters -> {asset_canister_id} -> declarations -> env_override to a string` in `dfx.json` will replace `process.env.DFX_NETWORK` with the string in the autogenerated declarations
-- Write your own `createActor` constructor
