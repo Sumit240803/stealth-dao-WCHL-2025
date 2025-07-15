@@ -1,3 +1,27 @@
+type ArgumentValue = variant {
+  String: text;
+  Int: int32;
+};
+
+type CredentialSpec = record {
+  credential_type: text;
+  arguments: opt vec record { text; ArgumentValue };
+};
+
+type CredentialParams = record {
+  spec: CredentialSpec;
+  subject_id: text;
+  credential_id_url: text;
+  issuer_url: text;
+  expiration_timestamp_s: nat32;
+};
+
 service : {
-    "greet": (text) -> (text) query;
-}
+  create_credential_jwt: (
+    text,
+    opt vec record { text; ArgumentValue },
+    text,
+    text,
+    nat32
+  ) -> (text);
+};
